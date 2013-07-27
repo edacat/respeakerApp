@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">respeakerApp</string>
+    <string name="action_settings">Settings</string>
+    <string name="record_button">RECORD</string>
+    <string name="respeak_button">RESPEAK</string>
+    <string name="transcribe_button">TRANSCRIBE</string>
+    <string name="title_activity_record">Record</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="record_button_description">Press to record</string>
+    <string name="stop_button_description">Press to stop</string>
+    <string name="title_activity_respeak">Respeak</string>
+    <string name="title_activity_transcribe">Transcribe</string>
+    <string name="no_data">No Data</string>
+    <string name="title_activity_file_explorer">FileExplorerActivity</string>
+    <string name="title_activity_review">ReviewActivity</string>
+    <string name="title_activity_time_stretch">TimeStretchActivity</string>
+
+</resources>
