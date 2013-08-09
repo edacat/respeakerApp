@@ -30,11 +30,10 @@ public class FileExplorerActivity extends FragmentActivity{
 	private static final String STATE_TAB = "tab";
 		
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		
+	protected void onCreate(Bundle savedInstanceState) {		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_file_explorer);
-		Log.d("FileExplorerActivity", "view inflated");
+		Log.d("FileExplorerActivity", "View inflated.");
 		
 		// get info about which activity this is intended to launch (respeaking or transcription)
 		inputActivity = getIntent().getIntExtra(TabConstants.INPUT_ACTIVITY, 1);
@@ -46,7 +45,7 @@ public class FileExplorerActivity extends FragmentActivity{
 			inputActivity = savedInstanceState.getInt(TabConstants.INPUT_ACTIVITY);
 		}
 			
-		Log.d("FileExplorerActivity", "tabs set up");
+		Log.d("FileExplorerActivity", "Tabs set up.");
 
 		// Show the Up button in the action bar.
 		setupActionBar();
@@ -58,12 +57,10 @@ public class FileExplorerActivity extends FragmentActivity{
 	private void setupTabs(){
 		mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
 		mTabHost.setup(this, getSupportFragmentManager(), R.id.realtabcontent);
-		Log.d("FileExplorerActivity", "tab host set up");
+		Log.d("FileExplorerActivity", "Tab host set up.");
 		
 		// pass bundles of arguments to each new tab
 		Bundle[] bundles = new Bundle[TabConstants.TAB_CATEGORIES.length];
-		
-		Log.d("Bundle array", "started");
 		
 		for (int i = 0; i < TabConstants.TAB_CATEGORIES.length; i++){
 			String tabCategoryName = TabConstants.TAB_CATEGORIES[i];
@@ -71,7 +68,7 @@ public class FileExplorerActivity extends FragmentActivity{
 			bundles[i].putInt(TabConstants.TAB_CATEGORY, i);
 			bundles[i].putInt(TabConstants.INPUT_ACTIVITY, inputActivity);
 			mTabHost.addTab(mTabHost.newTabSpec(tabCategoryName).setIndicator(tabCategoryName), FileExplorerFragment.class, bundles[i]);
-			Log.d("Bundle array", "tab added");
+			Log.d("FileExplorerActivity", "Tab from bundle array added.");
 		}
 	}
 	

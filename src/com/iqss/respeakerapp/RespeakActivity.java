@@ -13,13 +13,13 @@ package com.iqss.respeakerapp;
 import com.iqss.respeakerapp.fragments.RecordingFragment;
 import com.iqss.respeakerapp.fragments.RecordingFragment.OnButtonFocusListener;
 import com.iqss.respeakerapp.fragments.RespeakPlaybackFragment;
-import com.iqss.respeakerapp.utils.PlayedAllListener;
 import com.iqss.respeakerapp.utils.TabConstants;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.NavUtils;
@@ -36,6 +36,10 @@ public class RespeakActivity extends FragmentActivity implements OnButtonFocusLi
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_respeak);
 		
+		// might change this later, prevents standby mode
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		
+		// setting arguments to pass to fragments within activity (playback and record)
 		Bundle filenameBundle = new Bundle();
 		filenameBundle.putString(TabConstants.FILENAME, getIntent().getStringExtra(TabConstants.FILENAME));
 		
@@ -45,12 +49,12 @@ public class RespeakActivity extends FragmentActivity implements OnButtonFocusLi
 		playbackFragment = new RespeakPlaybackFragment();
 		playbackFragment.setArguments(filenameBundle);
 		transaction.add(R.id.respeak_playback_frame, playbackFragment);
-		Log.d("respeakActivity", "playback fragment added");
+		Log.d("respeakActivity", "Playback fragment added.");
 		
 		recordFragment = new RecordingFragment();
 		recordFragment.setArguments(filenameBundle);
 		transaction.add(R.id.respeak_record_frame, recordFragment);
-		Log.d("respeakActivity", "record fragment added");
+		Log.d("respeakActivity", "Record fragment added.");
 		
 		transaction.commit();
 		
@@ -58,11 +62,15 @@ public class RespeakActivity extends FragmentActivity implements OnButtonFocusLi
 		setupActionBar();
 	}
 	
+	/*
+	 * Listener for record button (pauses playback if user starts recording the respeaking)
+	 * @see com.iqss.respeakerapp.fragments.RecordingFragment.OnButtonFocusListener#onButtonFocus()
+	 */
 	@Override
 	public void onButtonFocus() {
+		// Simulates play button click (i.e. if there is audio playback, pauses it)
 		if (playbackFragment.getStatus()){
 			playbackFragment.getView().findViewById(R.id.play_button).performClick();
-			Log.d("button", "focused");
 		}
 	}
 	

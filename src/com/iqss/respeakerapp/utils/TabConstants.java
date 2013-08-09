@@ -24,5 +24,5 @@ public class TabConstants {
 	public static final String FILENAME = "File Name";
 	
 	private static final File sdCard = Environment.getExternalStorageDirectory();
-	public static final String PREFIX = sdCard.getAbsolutePath() + "/respeakerApp/";
+	public static final String PREFIX = sdCard.getAbsolutePath() + "/respeakerApp/"; // parent folder for all files
 }

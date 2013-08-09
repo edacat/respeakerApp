@@ -42,7 +42,6 @@ public class Microphone {
 	public Microphone(String activityName) {
 		// determines which folder to record to (i.e. if recording is the original or the respeaking)
 		subFolder = (activityName.equals("RecordActivity")) ? "recordings" : "inProgress";
-		Log.d("activity", subFolder);
 	}
 
 	/*
@@ -74,7 +73,6 @@ public class Microphone {
 					writeToFile();
 				}
 			});
-			Log.d("fileeee", filePath);
 			recordingThread.start();
 		}
 	}
@@ -99,12 +97,14 @@ public class Microphone {
 		
 		// move WAV file to respeakings folder if done recording respoken version
 		if (subFolder.equals("inProgress") && filePath != null){
-			Log.d("moving", filePath);
 			subFolder = "respeakings";
 			setNewFileName(new File(filePath).getName());
 		}
 	}
 	
+	/*
+	 * Stops recorder and frees it, inserts file size.
+	 */
 	public void stopRecorder(){
 		if (recorder != null) {
 			if (recordingThread != null)
@@ -142,11 +142,8 @@ public class Microphone {
 		int readCode = 0;
 		byte[] audioData = new byte[RECORDER_BUFFER_SIZE];
 		BufferedOutputStream outputStream = null;
-		try {
-			
-			outputStream = new BufferedOutputStream(new FileOutputStream(
-					filePath, true));
-			Log.d("Microphone", filePath);
+		try {		
+			outputStream = new BufferedOutputStream(new FileOutputStream(filePath, true));
 			while (isRecording) {
 				readCode = recorder.read(audioData, 0, RECORDER_BUFFER_SIZE);
 				if (readCode != AudioRecord.ERROR_INVALID_OPERATION) {
@@ -178,12 +175,13 @@ public class Microphone {
 	private boolean setNewFileName(String filename) {
 		File dir = new File(TabConstants.PREFIX + subFolder);
 		dir.mkdirs();
+		// moving file out of inProgress folder if done respeaking
 		if (subFolder.equals("respeakings")){
 			new File(filePath).renameTo(new File(dir, filename));
 			return true;
 		}
+		// otherwise create file object to check if it exists
 		File outputFile = new File(dir, filename);
-		Log.d("file", outputFile.getAbsolutePath());
 		try {
 			if (!outputFile.exists()){
 				outputFile.createNewFile();
@@ -204,7 +202,7 @@ public class Microphone {
 			if (fileSize == 0)
 				fileSize = Integer.reverseBytes(sizeWriter.readInt());
 			sizeWriter.close();
-			Log.d("filesize", Integer.toString(fileSize));
+			Log.d("Microphone", "Filesize: " + Integer.toString(fileSize));
 		} catch (Exception e) {
 			Log.e("Microphone", "Error reading file size");
 		}

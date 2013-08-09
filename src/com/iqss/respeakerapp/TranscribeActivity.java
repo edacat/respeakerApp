@@ -24,9 +24,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnTouchListener;
-import android.widget.Chronometer;
-import android.widget.EditText;
 import android.support.v4.app.NavUtils;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -37,12 +36,19 @@ public class  TranscribeActivity extends FragmentActivity implements OnTouchList
 	private TranscribePlaybackFragment playbackFragment = null;
 	private TranscribeFragment transcribeFragment = null;
 	
-	
+	/*
+	 * Setup when activity launched.
+	 * @see android.support.v4.app.FragmentActivity#onCreate(android.os.Bundle)
+	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_transcribe);
 		
+		// might change this later, prevents standby mode
+		getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		
+		// setting up arguments to pass to fragments (playback and transcribe)
 		Bundle filenameBundle = new Bundle();
 		filenameBundle.putString(TabConstants.FILENAME, getIntent().getStringExtra(TabConstants.FILENAME));
 	
@@ -61,6 +67,55 @@ public class  TranscribeActivity extends FragmentActivity implements OnTouchList
 		
 		// Show the Up button in the action bar.
 		setupActionBar();
+	}
+	
+	// -------------------------------------------------------------
+	// *********************LISTENER FUNCTIONS**********************
+	// -------------------------------------------------------------
+	
+	// pauses playback
+	private void onTextFocus() {
+		if (playbackFragment.getStatus()){ // if audio is playing
+			playbackFragment.getView().findViewById(R.id.play_button).performClick();
+			Log.d("TranscribeActivity", "Playback paused for transcription.");
+		}	
+	}
+	
+	// calls onTextFocus when textbox clicked
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		onTextFocus();
+		return false; // important! do not remove (keeps keyboard functionality)
+	}
+	
+	// calls onTextFocus when user starts typing
+	@Override
+	public void beforeTextChanged(CharSequence str, int start, int count, int after) {	
+		
+		// HACK: assumes that the only way for the number of characters in the textbox to
+		// increase by exactly 9 or 10 characters is if time stamp is inserted
+		// (might not work if 9-10 characters are copy and pasted in)
+		if (after != 9 && after != 10)
+			onTextFocus();
+		
+	}
+
+	// appends timestamp to textbox when recording (re)started
+	@Override
+	public void onClicked(String timestamp) {
+		 transcribeFragment.addText("\n(" + timestamp + ") ");
+	}
+
+	// -------------------------------------------------------------
+	// **********IGNORE (inserted to satisfy interface)*************
+	// -------------------------------------------------------------
+
+	@Override
+	public void onTextChanged(CharSequence str, int start, int count, int after) {	
+	}
+	
+	@Override
+	public void afterTextChanged(Editable arg0) {
 	}
 	
 	// -------------------------------------------------------------
@@ -99,46 +154,6 @@ public class  TranscribeActivity extends FragmentActivity implements OnTouchList
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	private void onTextFocus() {
-		if (playbackFragment.getStatus()){
-			playbackFragment.getView().findViewById(R.id.play_button).performClick();
-			Log.d("button", "focused");
-		}	
-		Log.d("button", "focused??");
-	}
-
-//	@Override
-//	public String makeTimeStamp() {
-//		return ((Chronometer) playbackFragment.getView().findViewById(R.id.playback_chronometer)).getText().toString();
-//	}
-
-	@Override
-	public void onClicked(String timestamp) {
-		 transcribeFragment.addText("\n(" + timestamp + ") ");
-	}
-
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		onTextFocus();
-		return false;
-	}
-
-	@Override
-	public void afterTextChanged(Editable arg0) {
-	}
-
-	@Override
-	public void beforeTextChanged(CharSequence str, int start, int count,
-			int after) {	
-		if (after != 9 && after != 10)
-			onTextFocus();
-	}
-
-	@Override
-	public void onTextChanged(CharSequence str, int start, int count, int after) {
-		
 	}
 
 }

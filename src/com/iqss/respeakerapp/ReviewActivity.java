@@ -1,3 +1,12 @@
+/**
+* ReviewActivity.java
+*  
+* Launched when clicking a "completed" file in respeaking or transcription.
+* Either plays back audio or shows text.
+* 
+* @author Jessica Yao
+*/
+
 package com.iqss.respeakerapp;
 
 import com.iqss.respeakerapp.fragments.TranscribePlaybackFragment;
@@ -22,17 +31,22 @@ public class ReviewActivity extends FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_review);
 		
+		// setting arguments to pass to fragment (filename)
 		Bundle filenameBundle = new Bundle();
 		filenameBundle.putString(TabConstants.FILENAME, getIntent().getStringExtra(TabConstants.FILENAME));
-		Log.d("review", filenameBundle.getString(TabConstants.FILENAME));
+		
 		FragmentManager fManager = getSupportFragmentManager();
 		FragmentTransaction transaction = fManager.beginTransaction();
 		
-		if (getIntent().getIntExtra(TabConstants.INPUT_ACTIVITY, 1) == 1){ // in Respeaking section
+		// in Respeaking section (launching playback)
+		// 1 is hard-coded (could prob associate INPUT_ACTIVITY with enums, but...)
+		if (getIntent().getIntExtra(TabConstants.INPUT_ACTIVITY, 1) == 1){ 
 			TranscribePlaybackFragment playbackFragment = new TranscribePlaybackFragment();
 			playbackFragment.setArguments(filenameBundle);
 			transaction.add(R.id.review_frame, playbackFragment);
-		} else { // in Transcribe section
+		} 
+		// in Transcribe section (launching text viewer)
+		else { 
 			TextFragment textFragment = new TextFragment();
 			textFragment.setArguments(filenameBundle);
 			transaction.add(R.id.review_frame, textFragment);
