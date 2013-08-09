@@ -16,5 +16,8 @@
     <string name="title_activity_file_explorer">FileExplorerActivity</string>
     <string name="title_activity_review">ReviewActivity</string>
     <string name="title_activity_time_stretch">TimeStretchActivity</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="save_query">Save recording as:</string>
 
 </resources>

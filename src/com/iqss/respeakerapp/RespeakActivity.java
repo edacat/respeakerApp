@@ -13,6 +13,7 @@ package com.iqss.respeakerapp;
 import com.iqss.respeakerapp.fragments.RecordingFragment;
 import com.iqss.respeakerapp.fragments.RecordingFragment.OnButtonFocusListener;
 import com.iqss.respeakerapp.fragments.RespeakPlaybackFragment;
+import com.iqss.respeakerapp.utils.PlayedAllListener;
 import com.iqss.respeakerapp.utils.TabConstants;
 
 import android.os.Bundle;

@@ -29,6 +29,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 public class TranscribeFragment extends Fragment{
 	private final static String SAVED_TEXT = "saved text";
@@ -104,6 +105,21 @@ public class TranscribeFragment extends Fragment{
 				dir.mkdirs();
 				output.renameTo(new File(dir, output.getName()));
 				done = true;
+				
+				String toastText = "Saved transcription as " + output.getName();
+				Toast.makeText(getActivity().getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
+			    Thread thread = new Thread(){
+			    	@Override
+		            public void run() {
+		                 try {
+		                    Thread.sleep(2000);
+		                    getActivity().finish();
+		                } catch (Exception e) {
+		                    Log.d("TranscribeFragment", "error returning to activity");
+		                }
+		             }  
+		           };
+				thread.start();
 			}		
 		});
 	}

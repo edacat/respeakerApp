@@ -10,16 +10,11 @@
 
 package com.iqss.respeakerapp;
 
-import java.net.URL;
-
-import android.view.View.OnClickListener;
-
 import com.iqss.respeakerapp.fragments.PlaybackFragment.ExtraOnClickListener;
 import com.iqss.respeakerapp.fragments.TranscribePlaybackFragment;
 import com.iqss.respeakerapp.fragments.TranscribeFragment;
 import com.iqss.respeakerapp.utils.TabConstants;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;

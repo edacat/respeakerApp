@@ -8,18 +8,25 @@
 
 package com.iqss.respeakerapp.fragments;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.regex.Pattern;
 
 import com.iqss.respeakerapp.R;
+import com.iqss.respeakerapp.fragments.NameDialog.SaveDialogListener;
 import com.iqss.respeakerapp.utils.Microphone;
 import com.iqss.respeakerapp.utils.TabConstants;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,8 +34,10 @@ import android.view.ViewGroup;
 import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
-public class RecordingFragment extends Fragment {
+public class RecordingFragment extends Fragment implements SaveDialogListener{
+	
 	// constants used for restoring fragment state
 	static final String STATE_FILENAME = "outputFile";
 	static final String STATE_RECORDING = "wasRecording";
@@ -81,12 +90,25 @@ public class RecordingFragment extends Fragment {
 			timeWhenStopped = savedInstanceState.getLong(STATE_TIME);
 			Log.d("RecordingFragment", "state recreated");			
 		}
+		
+		SharedPreferences mem = this.getActivity().getSharedPreferences("newRecording", 0);
+		filename = mem.getString(STATE_FILENAME, filename);
+		timeWhenStopped = mem.getLong(STATE_TIME, timeWhenStopped);
+		
+		if (filename != null)
+			Log.d("filename", filename);
+		else
+			Log.d("filename", "null");
+		Log.d("time", Long.toString(timeWhenStopped));
 
 		// instantiating an audio recorder, passing name of activity which holds fragment
 		mic = new Microphone(mActivity.getClass().getSimpleName());
 		
 		// set up chronometer
 		mChronometer = (Chronometer) recordingLayout.findViewById(R.id.chronometer);
+		Log.d("elapsed", Long.toString(SystemClock.elapsedRealtime()));
+		Log.d("time when stopped", Long.toString(timeWhenStopped));
+		mChronometer.setBase(SystemClock.elapsedRealtime() + timeWhenStopped);
 		Log.d("RecordingFragment", "Mic and chronometer set up.");
 		
 		// attach microphone functions to record/pause/stop buttons
@@ -110,9 +132,20 @@ public class RecordingFragment extends Fragment {
 	 */
 	public void onPause() {
 		super.onPause();
+		if (isRecording)
+			timeWhenStopped = mChronometer.getBase() - SystemClock.elapsedRealtime();
+		isRecording = false;
 		mic.stopRecorder();
-		timeWhenStopped = mChronometer.getBase() - SystemClock.elapsedRealtime();
 		mChronometer.stop();
+		
+		SharedPreferences mem = this.getActivity().getSharedPreferences("newRecording", 0);
+		SharedPreferences.Editor editor = mem.edit();
+		if (filename != null)		
+			editor.putString(STATE_FILENAME, filename);
+		else
+			editor.remove(STATE_FILENAME);
+		editor.putLong(STATE_TIME, timeWhenStopped);
+		editor.commit();
 	}
 	
 	/*
@@ -151,6 +184,8 @@ public class RecordingFragment extends Fragment {
 					mChronometer.stop();
 					
 					mic.pauseRecording();
+					
+					record_button.setImageResource(R.drawable.record_logo);
 					Log.d("Record Button", "pausing");
 				}
 				// restarts recording
@@ -163,6 +198,8 @@ public class RecordingFragment extends Fragment {
 					
 					mic.setup(filename);		
 					mic.startRecording();
+					
+					record_button.setImageResource(R.drawable.pause);
 					Log.d("Record Button", "recording again");
 				}
 				isRecording = !isRecording; // flip flag
@@ -183,12 +220,60 @@ public class RecordingFragment extends Fragment {
 				mChronometer.stop();
 				mChronometer.setBase(SystemClock.elapsedRealtime());
 				timeWhenStopped = 0;
-
+				
+				if (filename != null){
+					if (getActivity().getClass().getSimpleName().equals("RecordActivity")){
+						Bundle dialogArgs = new Bundle();
+						dialogArgs.putString(TabConstants.FILENAME, filename);
+						
+						FragmentManager fm = getActivity().getSupportFragmentManager();
+						NameDialog dialog = new NameDialog();
+						dialog.setArguments(dialogArgs);
+						dialog.show(fm, "naming dialog");
+					} else {
+						// make toast TODO
+						String toastText = "Saved respeaking as " + filename;
+						Toast.makeText(getActivity().getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
+					    Thread thread = new Thread(){
+					    	@Override
+				            public void run() {
+				                 try {
+				                    Thread.sleep(2000);
+				                    getActivity().finish();
+				                } catch (Exception e) {
+				                    Log.d("RecordingFragment", "error returning to activity");
+				                }
+				             }  
+				           };
+						thread.start();
+					}
+				}
+				
 				isRecording = false;
 				filename = null;
+				record_button.setImageResource(R.drawable.record_logo);
+			
 				Log.d("Stop Button", "recording stopped");
 			}
 		});
+	}
+
+	@Override
+	public void onDialogPositiveClick(DialogFragment dialog, String absPath, String newName) {
+		Log.d("RecordingFragment", "Positive click from DialogFragment");	
+		File original = new File(absPath);
+		if (!Pattern.compile("([^\\s]+(\\.(?i)(wav))$)").matcher(newName).matches())
+			newName = newName + ".wav";
+		original.renameTo(new File(original.getParentFile().getAbsolutePath(), newName));
+		
+	}
+
+	@Override
+	public void onDialogNegativeClick(DialogFragment dialog, String absPath) {
+		Log.d("RecordingFragment", "Negative click from DialogFragment");
+		Log.d("RecordingFragment", absPath);
+		File file = new File(absPath);
+		file.delete();
 	}
 	
 }

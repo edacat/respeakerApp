@@ -10,19 +10,19 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_alignParentTop="true"
+    android:gravity="center"
     android:orientation="horizontal" >
 	   	<ImageButton
     	android:id="@+id/record_icon"
-    	android:layout_width="0dp"
-    	android:layout_weight="1"
+    	android:layout_width="wrap_content"
     	android:layout_height="wrap_content"
+    	android:layout_marginRight="20dp"
     	android:src="@drawable/record_logo"
     	android:contentDescription="@string/record_button_description" />
     
     	<ImageButton
     	android:id="@+id/stop_icon"
-    	android:layout_width="0dp"
-    	android:layout_weight="1"
+    	android:layout_width="wrap_content"
     	android:layout_height="wrap_content"
     	android:src="@drawable/stop"
     	android:contentDescription="@string/stop_button_description" />
@@ -33,7 +33,7 @@
     android:layout_width="wrap_content" 
     android:layout_height="wrap_content" 
     android:layout_centerHorizontal="true"
-    android:textSize="40sp"
+    android:textSize="30sp"
     android:layout_below="@+id/button_layout"/> 
         
 </RelativeLayout>
