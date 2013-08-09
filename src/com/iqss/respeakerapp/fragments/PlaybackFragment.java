@@ -29,7 +29,7 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 	static final String STATE_PLAYING = "wasPlaying";
 	static final String STATE_TIME = "playerTime";
 	static final String STATE_CHRONOMETER = "chronometerTime";
-	static final String STATE_BYTES = "playerBytes";
+//	static final String STATE_BYTES = "playerBytes";
 
 	protected RelativeLayout playbackLayout = null;
 
@@ -71,7 +71,7 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		if (savedInstanceState != null) {
 			filename = savedInstanceState.getString(STATE_FILENAME);
 			isPlaying = savedInstanceState.getBoolean(STATE_PLAYING);
-			playbackLoc = savedInstanceState.getInt(STATE_BYTES);
+//			playbackLoc = savedInstanceState.getInt(STATE_BYTES);
 			timeWhenStopped = savedInstanceState.getLong(STATE_TIME);
 			Log.d("PlaybackFragment", "state recreated");
 		}
@@ -126,7 +126,7 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		super.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putString(STATE_FILENAME, filename);
 		savedInstanceState.putBoolean(STATE_PLAYING, isPlaying);
-		savedInstanceState.putInt(STATE_BYTES, playbackLoc);
+//		savedInstanceState.putInt(STATE_BYTES, playbackLoc);
 		savedInstanceState.putLong(STATE_TIME, mChronometer.getBase() - SystemClock.elapsedRealtime());
 	}
 

@@ -1,10 +1,10 @@
 /**
-* RecordingFragment.java
-*  
-* Connects functionality from Microphone.java with layout in recording fragment (e.g. buttons).
-* 
-* @author Jessica Yao
-*/
+ * RecordingFragment.java
+ *  
+ * Connects functionality from Microphone.java with layout in recording fragment (e.g. buttons).
+ * 
+ * @author Jessica Yao
+ */
 
 package com.iqss.respeakerapp.fragments;
 
@@ -36,8 +36,8 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-public class RecordingFragment extends Fragment implements SaveDialogListener{
-	
+public class RecordingFragment extends Fragment implements SaveDialogListener {
+
 	// constants used for restoring fragment state
 	static final String STATE_FILENAME = "outputFile";
 	static final String STATE_RECORDING = "wasRecording";
@@ -49,22 +49,22 @@ public class RecordingFragment extends Fragment implements SaveDialogListener{
 	private boolean isRecording = false;
 	private String filename = null;
 	private long timeWhenStopped = 0;
-	
+
 	private Activity mActivity = null;
 	private OnButtonFocusListener mCallback;
-	
+
 	public interface OnButtonFocusListener {
-        public void onButtonFocus();
-    }
-	
-	 @Override
-	 public void onAttach(Activity activity) {
-		 super.onAttach(activity);
-		 mActivity = this.getActivity();
-		 if (mActivity.getClass().getSimpleName().equals("RespeakActivity"))
-				mCallback = (OnButtonFocusListener) mActivity;
+		public void onButtonFocus();
 	}
-	 
+
+	@Override
+	public void onAttach(Activity activity) {
+		super.onAttach(activity);
+		mActivity = this.getActivity();
+		if (mActivity.getClass().getSimpleName().equals("RespeakActivity"))
+			mCallback = (OnButtonFocusListener) mActivity;
+	}
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
@@ -72,10 +72,7 @@ public class RecordingFragment extends Fragment implements SaveDialogListener{
 		View recordingView = inflater.inflate(R.layout.record_view, container,
 				false);
 		Log.d("RecordingFragment", "view inflated");
-		if (getArguments() != null){
-			filename = getArguments().getString(TabConstants.FILENAME) + ".wav";
-			Log.d("Args", filename);
-		}
+
 		recordingLayout = (RelativeLayout) recordingView;
 		return recordingView;
 	}
@@ -84,33 +81,48 @@ public class RecordingFragment extends Fragment implements SaveDialogListener{
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		// recreates fragment state
-		if (savedInstanceState != null) {
-			filename = savedInstanceState.getString(STATE_FILENAME);
-			isRecording = savedInstanceState.getBoolean(STATE_RECORDING);
-			timeWhenStopped = savedInstanceState.getLong(STATE_TIME);
-			Log.d("RecordingFragment", "state recreated");			
+		if (filename == null) {
+			if (getArguments() != null) {
+				filename = getArguments().getString(TabConstants.FILENAME)
+						+ ".wav";
+				Log.d("Args", filename);
+			}
+		} else {
+			if (savedInstanceState != null) {
+				filename = savedInstanceState.getString(STATE_FILENAME);
+				isRecording = savedInstanceState.getBoolean(STATE_RECORDING);
+				timeWhenStopped = savedInstanceState.getLong(STATE_TIME);
+				Log.d("RecordingFragment", "state recreated");
+			}
 		}
-		
-		SharedPreferences mem = this.getActivity().getSharedPreferences("newRecording", 0);
+		SharedPreferences mem = this.getActivity().getSharedPreferences(
+				"newRecording", 0);
+		if (!getActivity().getClass().getSimpleName().equals("RecordActivity")) {
+			mem = this.getActivity().getSharedPreferences(
+					filename.split(".wav")[0], 0);
+		}
+
 		filename = mem.getString(STATE_FILENAME, filename);
 		timeWhenStopped = mem.getLong(STATE_TIME, timeWhenStopped);
-		
+
 		if (filename != null)
 			Log.d("filename", filename);
 		else
 			Log.d("filename", "null");
 		Log.d("time", Long.toString(timeWhenStopped));
 
-		// instantiating an audio recorder, passing name of activity which holds fragment
+		// instantiating an audio recorder, passing name of activity which holds
+		// fragment
 		mic = new Microphone(mActivity.getClass().getSimpleName());
-		
+
 		// set up chronometer
-		mChronometer = (Chronometer) recordingLayout.findViewById(R.id.chronometer);
+		mChronometer = (Chronometer) recordingLayout
+				.findViewById(R.id.chronometer);
 		Log.d("elapsed", Long.toString(SystemClock.elapsedRealtime()));
 		Log.d("time when stopped", Long.toString(timeWhenStopped));
 		mChronometer.setBase(SystemClock.elapsedRealtime() + timeWhenStopped);
 		Log.d("RecordingFragment", "Mic and chronometer set up.");
-		
+
 		// attach microphone functions to record/pause/stop buttons
 		setUpButtons();
 	}
@@ -126,31 +138,37 @@ public class RecordingFragment extends Fragment implements SaveDialogListener{
 		savedInstanceState.putLong(STATE_TIME, mChronometer.getBase()
 				- SystemClock.elapsedRealtime());
 	}
-	
+
 	/*
 	 * When fragment is out of focus, microphone and chronometer must be paused.
 	 */
 	public void onPause() {
 		super.onPause();
-		if (isRecording)
-			timeWhenStopped = mChronometer.getBase() - SystemClock.elapsedRealtime();
-		isRecording = false;
-		mic.stopRecorder();
-		mChronometer.stop();
-		
-		SharedPreferences mem = this.getActivity().getSharedPreferences("newRecording", 0);
-		SharedPreferences.Editor editor = mem.edit();
-		if (filename != null)		
+		if (filename != null) {
+			if (isRecording)
+				timeWhenStopped = mChronometer.getBase()
+						- SystemClock.elapsedRealtime();
+			isRecording = false;
+			mic.stopRecorder();
+			mChronometer.stop();
+
+			SharedPreferences mem = this.getActivity().getSharedPreferences(
+					"newRecording", 0);
+			if (!getActivity().getClass().getSimpleName()
+					.equals("RecordActivity")) {
+				mem = this.getActivity().getSharedPreferences(
+						filename.split(".wav")[0], 0);
+			}
+			SharedPreferences.Editor editor = mem.edit();
 			editor.putString(STATE_FILENAME, filename);
-		else
-			editor.remove(STATE_FILENAME);
-		editor.putLong(STATE_TIME, timeWhenStopped);
-		editor.commit();
+			editor.putLong(STATE_TIME, timeWhenStopped);
+			editor.commit();
+		}
 	}
-	
+
 	/*
-	 * Set filename for recording, in form yyyy-MM-dd_HH-mm-ss.wav
-	 * Date format used to ensure uniqueness of filename.
+	 * Set filename for recording, in form yyyy-MM-dd_HH-mm-ss.wav Date format
+	 * used to ensure uniqueness of filename.
 	 */
 	@SuppressLint("SimpleDateFormat")
 	private void setNewFilename() {
@@ -168,37 +186,39 @@ public class RecordingFragment extends Fragment implements SaveDialogListener{
 		// setting up functionality for the record button
 		final ImageButton record_button = (ImageButton) recordingLayout
 				.findViewById(R.id.record_icon);
-		
+
 		// anonymous function call (should start/pause recording)
 		record_button.setOnClickListener(new View.OnClickListener() {
 
 			@Override
 			public void onClick(View v) {
-				if (mCallback != null){
+				if (mCallback != null) {
 					mCallback.onButtonFocus();
 					Log.d("callback", "plz");
 				}
 				// pauses recording
-				if (isRecording) {			
-					timeWhenStopped = mChronometer.getBase() - SystemClock.elapsedRealtime();
+				if (isRecording) {
+					timeWhenStopped = mChronometer.getBase()
+							- SystemClock.elapsedRealtime();
 					mChronometer.stop();
-					
+
 					mic.pauseRecording();
-					
+
 					record_button.setImageResource(R.drawable.record_logo);
 					Log.d("Record Button", "pausing");
 				}
 				// restarts recording
-				else {			
+				else {
 					// setup new filename if no pre-existing one
 					if (filename == null)
 						setNewFilename();
-					mChronometer.setBase(SystemClock.elapsedRealtime() + timeWhenStopped);
+					mChronometer.setBase(SystemClock.elapsedRealtime()
+							+ timeWhenStopped);
 					mChronometer.start();
-					
-					mic.setup(filename);		
+
+					mic.setup(filename);
 					mic.startRecording();
-					
+
 					record_button.setImageResource(R.drawable.pause);
 					Log.d("Record Button", "recording again");
 				}
@@ -209,63 +229,84 @@ public class RecordingFragment extends Fragment implements SaveDialogListener{
 		// setting up similar functionality for the stop button
 		final ImageButton stop_button = (ImageButton) recordingLayout
 				.findViewById(R.id.stop_icon);
-		
+
 		// anonymous function call (should stop recording)
 		stop_button.setOnClickListener(new View.OnClickListener() {
 
 			@Override
-			public void onClick(View v) {			
+			public void onClick(View v) {
 				mic.stopRecording();
-				
+
 				mChronometer.stop();
 				mChronometer.setBase(SystemClock.elapsedRealtime());
 				timeWhenStopped = 0;
-				
-				if (filename != null){
-					if (getActivity().getClass().getSimpleName().equals("RecordActivity")){
+
+				if (filename != null) {
+					if (getActivity().getClass().getSimpleName()
+							.equals("RecordActivity")) {
 						Bundle dialogArgs = new Bundle();
 						dialogArgs.putString(TabConstants.FILENAME, filename);
-						
-						FragmentManager fm = getActivity().getSupportFragmentManager();
+
+						FragmentManager fm = getActivity()
+								.getSupportFragmentManager();
 						NameDialog dialog = new NameDialog();
 						dialog.setArguments(dialogArgs);
 						dialog.show(fm, "naming dialog");
 					} else {
 						// make toast TODO
 						String toastText = "Saved respeaking as " + filename;
-						Toast.makeText(getActivity().getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
-					    Thread thread = new Thread(){
-					    	@Override
-				            public void run() {
-				                 try {
-				                    Thread.sleep(2000);
-				                    getActivity().finish();
-				                } catch (Exception e) {
-				                    Log.d("RecordingFragment", "error returning to activity");
-				                }
-				             }  
-				           };
+						Toast.makeText(getActivity().getApplicationContext(),
+								toastText, Toast.LENGTH_SHORT).show();
+						Thread thread = new Thread() {
+							@Override
+							public void run() {
+								try {
+									Thread.sleep(2000);
+									getActivity().finish();
+								} catch (Exception e) {
+									Log.d("RecordingFragment",
+											"error returning to activity");
+								}
+							}
+						};
 						thread.start();
 					}
 				}
-				
+
+				Log.d("Filename", filename.split(".wav")[0]);
+				SharedPreferences mem = getActivity().getSharedPreferences(
+						filename.split(".wav")[0], 0);
+				SharedPreferences.Editor editor = mem.edit();
+				editor.remove(STATE_FILENAME);
+				editor.remove(STATE_TIME);
+				editor.remove(PlaybackFragment.STATE_TIME);
+				editor.remove(PlaybackFragment.STATE_CHRONOMETER);
+				editor.commit();
+
 				isRecording = false;
 				filename = null;
 				record_button.setImageResource(R.drawable.record_logo);
-			
+
 				Log.d("Stop Button", "recording stopped");
 			}
 		});
 	}
 
 	@Override
-	public void onDialogPositiveClick(DialogFragment dialog, String absPath, String newName) {
-		Log.d("RecordingFragment", "Positive click from DialogFragment");	
+	public void onDialogPositiveClick(DialogFragment dialog, String absPath,
+			String newName) {
+		Log.d("RecordingFragment", "Positive click from DialogFragment");
 		File original = new File(absPath);
-		if (!Pattern.compile("([^\\s]+(\\.(?i)(wav))$)").matcher(newName).matches())
+		if (!Pattern.compile("([^\\s]+(\\.(?i)(wav))$)").matcher(newName)
+				.matches())
 			newName = newName + ".wav";
-		original.renameTo(new File(original.getParentFile().getAbsolutePath(), newName));
-		
+		File newFile = new File(original.getParentFile().getAbsolutePath(),
+				newName);
+		if (newFile.exists())
+			original.renameTo(new File(original.getParentFile()
+					.getAbsolutePath(), newName.replace(".wav", "_copy.wav")));
+		else
+			original.renameTo(newFile);
 	}
 
 	@Override
@@ -275,5 +316,5 @@ public class RecordingFragment extends Fragment implements SaveDialogListener{
 		File file = new File(absPath);
 		file.delete();
 	}
-	
+
 }

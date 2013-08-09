@@ -37,7 +37,7 @@ public class TranscribeFragment extends Fragment{
 	private LinearLayout transcribeLayout = null;
 	private View transcribeView = null;
 	private EditText transcribeField = null;
-	private File output = null; 
+	private File output = null;
 	private boolean done = false;
 	
 	@Override
@@ -105,6 +105,13 @@ public class TranscribeFragment extends Fragment{
 				dir.mkdirs();
 				output.renameTo(new File(dir, output.getName()));
 				done = true;
+				
+				SharedPreferences mem = getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
+				SharedPreferences.Editor editor = mem.edit();
+				editor.remove(SAVED_TEXT);
+				editor.remove(PlaybackFragment.STATE_TIME);
+				editor.remove(PlaybackFragment.STATE_CHRONOMETER);
+				editor.commit();
 				
 				String toastText = "Saved transcription as " + output.getName();
 				Toast.makeText(getActivity().getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();

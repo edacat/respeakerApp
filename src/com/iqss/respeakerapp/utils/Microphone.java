@@ -18,7 +18,6 @@ import java.io.RandomAccessFile;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder.AudioSource;
-import android.os.Environment;
 import android.util.Log;
 
 public class Microphone {
@@ -31,6 +30,7 @@ public class Microphone {
 	private String subFolder = null;	
 	private RandomAccessFile randomAccessWriter = null;
 
+	// should be compatible with all Android phones, but should cross-test
 	public static final int RECORDER_SAMPLE_RATE = 44100;
 	private static final int RECORDER_SOURCE = AudioSource.MIC;
 	private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
