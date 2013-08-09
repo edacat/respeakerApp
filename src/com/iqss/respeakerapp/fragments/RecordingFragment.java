@@ -20,7 +20,6 @@ import com.iqss.respeakerapp.utils.TabConstants;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -52,6 +51,8 @@ public class RecordingFragment extends Fragment implements SaveDialogListener {
 
 	private Activity mActivity = null;
 	private OnButtonFocusListener mCallback;
+	
+	private SharedPreferences mem = null;
 
 	public interface OnButtonFocusListener {
 		public void onButtonFocus();
@@ -95,7 +96,7 @@ public class RecordingFragment extends Fragment implements SaveDialogListener {
 				Log.d("RecordingFragment", "state recreated");
 			}
 		}
-		SharedPreferences mem = this.getActivity().getSharedPreferences(
+		mem = this.getActivity().getSharedPreferences(
 				"newRecording", 0);
 		if (!getActivity().getClass().getSimpleName().equals("RecordActivity")) {
 			mem = this.getActivity().getSharedPreferences(
@@ -152,13 +153,6 @@ public class RecordingFragment extends Fragment implements SaveDialogListener {
 			mic.stopRecorder();
 			mChronometer.stop();
 
-			SharedPreferences mem = this.getActivity().getSharedPreferences(
-					"newRecording", 0);
-			if (!getActivity().getClass().getSimpleName()
-					.equals("RecordActivity")) {
-				mem = this.getActivity().getSharedPreferences(
-						filename.split(".wav")[0], 0);
-			}
 			SharedPreferences.Editor editor = mem.edit();
 			editor.putString(STATE_FILENAME, filename);
 			editor.putLong(STATE_TIME, timeWhenStopped);
@@ -236,7 +230,7 @@ public class RecordingFragment extends Fragment implements SaveDialogListener {
 			@Override
 			public void onClick(View v) {
 				mic.stopRecording();
-
+				Log.d("derp", "hi");
 				mChronometer.stop();
 				mChronometer.setBase(SystemClock.elapsedRealtime());
 				timeWhenStopped = 0;
@@ -271,17 +265,17 @@ public class RecordingFragment extends Fragment implements SaveDialogListener {
 						};
 						thread.start();
 					}
+					
+					Log.d("Filename", filename.split(".wav")[0]);
+					SharedPreferences.Editor editor = mem.edit();
+					editor.remove(STATE_FILENAME);
+					editor.remove(STATE_TIME);
+					editor.remove(PlaybackFragment.STATE_TIME);
+					editor.remove(PlaybackFragment.STATE_CHRONOMETER);
+					editor.commit();
 				}
 
-				Log.d("Filename", filename.split(".wav")[0]);
-				SharedPreferences mem = getActivity().getSharedPreferences(
-						filename.split(".wav")[0], 0);
-				SharedPreferences.Editor editor = mem.edit();
-				editor.remove(STATE_FILENAME);
-				editor.remove(STATE_TIME);
-				editor.remove(PlaybackFragment.STATE_TIME);
-				editor.remove(PlaybackFragment.STATE_CHRONOMETER);
-				editor.commit();
+				
 
 				isRecording = false;
 				filename = null;

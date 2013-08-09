@@ -1,3 +1,12 @@
+/**
+ * RespeakPlaybackFragment.java
+ *  
+ * Sets up specific functionality for respeaking playback (i.e. slowed down audio).
+ * Uses the Sonic NDS open source code.
+ * 
+ * @author Jessica Yao
+ */
+
 package com.iqss.respeakerapp.fragments;
 
 import java.io.File;
@@ -10,19 +19,13 @@ import org.vinuxproject.sonic.AndroidAudioDevice;
 import org.vinuxproject.sonic.Sonic;
 
 import android.app.Activity;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.view.View;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 
 import com.iqss.respeakerapp.R;
 import com.iqss.respeakerapp.fragments.PlaybackFragment;
 import com.iqss.respeakerapp.utils.Microphone;
-import com.iqss.respeakerapp.utils.PlayedAllListener;
 
 public class RespeakPlaybackFragment extends PlaybackFragment {
 	private float speed = (float) 0.7;
@@ -112,7 +115,6 @@ public class RespeakPlaybackFragment extends PlaybackFragment {
 
 	@Override
 	protected void stopButtonAction() {
-		playbackLoc = 0;
 	}
 
 	@Override

@@ -12,11 +12,8 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.net.Uri;
-import android.os.Bundle;
-import android.os.SystemClock;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
-import android.widget.Chronometer;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 
@@ -24,58 +21,75 @@ public class TranscribePlaybackFragment extends PlaybackFragment {
 	
 	private MediaPlayer player = null;
 
-	protected void initialize(String fileLoc, final ImageButton button, SeekBar mSeekBar) throws Exception{
+	/*
+	 * Initializes MediaPlayer.
+	 */
+	protected void initialize(String fileLoc, final ImageButton stopButton, SeekBar mSeekBar) throws Exception{
+		
 		final FragmentActivity parentActivity = getActivity();
-		Uri uri = Uri.parse(fileLoc);
+		Uri uri = Uri.parse(fileLoc); // datasource
+		
 		// media player in idle state
 		player = new MediaPlayer();
 		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		
 		// initializes media player
 		player.setDataSource(parentActivity.getApplicationContext(), uri);
 		player.prepare();
-		Log.d("Audio length", Integer.toString((int) Math.ceil(player.getDuration() / 1000.)));
+//		Log.d("TranscribePlaybackFragment", "Audio length: " + Integer.toString((int) Math.ceil(player.getDuration() / 1000.)));
 		player.setOnCompletionListener(new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
-				playbackLoc = 0;
-				isPlaying = false;
-				mChronometer.setBase(SystemClock.elapsedRealtime());
-				timeWhenStopped = 0;
 				parentActivity.runOnUiThread(new Runnable(){
 					@Override
 					public void run() {
-						button.performClick();							
+						// simulates stop button
+						stopButton.performClick();							
 					}						
 				});
 				 
 			}	
 		});		
-		Log.d("MediaPlayer", "initialization successful");
+		Log.d("TranscribePlaybackFragment", "Initialization of MediaPlayer successful.");
 	}
 	
-	protected void playButtonAction(ImageButton button, SeekBar mSeekBar){
+	/*
+	 * Called when playing starts
+	 * @see com.iqss.respeakerapp.fragments.PlaybackFragment#playButtonAction(android.widget.ImageButton, android.widget.SeekBar)
+	 */
+	protected void playButtonAction(ImageButton stopButton, SeekBar mSeekBar){
 		if (player == null){
 			try {
-				initialize(filename, button, mSeekBar);
+				initialize(filename, stopButton, mSeekBar);
 				player.seekTo(playbackLoc);
 			} catch (Exception e) {
-				Log.e("Play Button", "error initializing");
+				Log.e("TranscribePlaybackFragment", "Error initializing play button.");
 			}
 		}
 		player.start();
 	}
 	
+	/*
+	 * Called when audio paused
+	 * @see com.iqss.respeakerapp.fragments.PlaybackFragment#pauseButtonAction()
+	 */
 	protected void pauseButtonAction(){
-//		Log.d("truthplayer", Boolean.toString(player == null));
 		player.pause();
 		playbackLoc = player.getCurrentPosition();
 	}
 	
+	/*
+	 * Called when audio stopped (releases player resources)
+	 * @see com.iqss.respeakerapp.fragments.PlaybackFragment#stopButtonAction()
+	 */
 	protected void stopButtonAction(){
 		pauseLogic();
-		playbackLoc = 0;
 	}
 	
+	/*
+	 * Takes care of player resource when paused
+	 * @see com.iqss.respeakerapp.fragments.PlaybackFragment#pauseLogic()
+	 */
 	protected void pauseLogic(){
 		if (player != null){
 			player.stop();
@@ -85,18 +99,12 @@ public class TranscribePlaybackFragment extends PlaybackFragment {
 	}
 
 	/*
-	 * Saves fragment state when activity is left.
+	 * Takes care of seeking (rewinding, fast-forwading)
+	 * @see com.iqss.respeakerapp.fragments.PlaybackFragment#seekAction(int)
 	 */
-	public void onSaveInstanceState(Bundle savedInstanceState) {
-		super.onSaveInstanceState(savedInstanceState);
-		 savedInstanceState.putString(STATE_FILENAME, filename);
-		 savedInstanceState.putBoolean(STATE_PLAYING, isPlaying);
-		 savedInstanceState.putInt(STATE_TIME, playbackLoc);
-	}
-
 	@Override
 	protected void seekAction(int newLoc) {
-		playbackLoc = newLoc * 1000;
+		playbackLoc = newLoc * 1000; // converting seconds to ms
 		if (player != null)
 			player.seekTo(playbackLoc);	
 	}

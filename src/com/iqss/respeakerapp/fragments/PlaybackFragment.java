@@ -1,3 +1,11 @@
+/**
+ * PlaybackFragment.java
+ *  
+ * Parent class which sets up shared playback functionality for respeaking and transcription.
+ * 
+ * @author Jessica Yao
+ */
+
 package com.iqss.respeakerapp.fragments;
 
 import java.io.File;
@@ -127,7 +135,7 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		savedInstanceState.putString(STATE_FILENAME, filename);
 		savedInstanceState.putBoolean(STATE_PLAYING, isPlaying);
 //		savedInstanceState.putInt(STATE_BYTES, playbackLoc);
-		savedInstanceState.putLong(STATE_TIME, mChronometer.getBase() - SystemClock.elapsedRealtime());
+		savedInstanceState.putLong(STATE_TIME, playbackLoc);
 	}
 
 	/*
@@ -181,6 +189,7 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 				mChronometer.stop();
 				mChronometer.setBase(SystemClock.elapsedRealtime());
 				timeWhenStopped = 0;
+				playbackLoc = 0;
 				
 				stopButtonAction();
 				playback_button.setImageResource(R.drawable.play);

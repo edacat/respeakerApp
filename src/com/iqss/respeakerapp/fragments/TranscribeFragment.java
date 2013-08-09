@@ -32,6 +32,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 public class TranscribeFragment extends Fragment{
+	
 	private final static String SAVED_TEXT = "saved text";
 	
 	private LinearLayout transcribeLayout = null;
@@ -39,37 +40,101 @@ public class TranscribeFragment extends Fragment{
 	private EditText transcribeField = null;
 	private File output = null;
 	private boolean done = false;
+	private SharedPreferences mem = null;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		// Inflate the layout for this fragment
-		transcribeView = inflater.inflate(R.layout.transcribe_view, container,
-				false);
+		transcribeView = inflater.inflate(R.layout.transcribe_view, container, false);
 		Log.d("TranscribeFragment", "view inflated");
+		
 		transcribeLayout = (LinearLayout) transcribeView;
 		transcribeField = (EditText) transcribeView.findViewById(R.id.transcription_field);
 		
-		if (getArguments() != null){
+		// set up arguments to get output filepath
+		if (getArguments() != null && output == null){
 			File dir = new File(TabConstants.PREFIX + "inProgress");
 			dir.mkdirs();
 			output = new File(dir, getArguments().getString(TabConstants.FILENAME) + ".txt");
-			Log.d("TranscribeFragment", output.toString());
 		}
 		
-		SharedPreferences mem = this.getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
+		mem = this.getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
 		String text = mem.getString(SAVED_TEXT, "");
-		if (text != null)
-			transcribeField.append(text);
 		
+		// show previously added text
+		if (text != null)
+			transcribeField.append(text);	
 		if (savedInstanceState != null)
 			transcribeField.append(savedInstanceState.getString(SAVED_TEXT));
 		
 		transcribeField.setOnTouchListener((OnTouchListener) this.getActivity());	
-		transcribeField.addTextChangedListener((TextWatcher) this.getActivity());		
-		
+		transcribeField.addTextChangedListener((TextWatcher) this.getActivity());			
 		setUpButtons();
 		
 		return transcribeView;
+	}
+
+	/*
+	 *  public to give other activities access to adding text
+	 */
+	public void addText(String str){
+		transcribeField.append(str);
+	}
+	
+	/*
+	 * Set up button functionality (done button).
+	 */
+	private void setUpButtons(){
+		((Button) transcribeLayout.findViewById(R.id.done_text_button)).setOnClickListener(new OnClickListener(){
+			@Override
+			public void onClick(View v) {
+				writeToFile();
+				
+				// move file to "completed" folder
+				File dir = new File(TabConstants.PREFIX + "transcriptions");
+				dir.mkdirs();
+				output.renameTo(new File(dir, output.getName()));
+				done = true;
+				
+				// remove SharedPreferences data when transcription completed
+				SharedPreferences.Editor editor = mem.edit();
+				editor.remove(SAVED_TEXT);
+				editor.remove(PlaybackFragment.STATE_TIME);
+				editor.remove(PlaybackFragment.STATE_CHRONOMETER);
+				editor.commit();
+				
+				// create toast (mini popup) to notify user that file has been saved
+				String toastText = "Saved transcription as " + output.getName();
+				Toast.makeText(getActivity().getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
+			    
+				// force redirect to file explorer after transcription completed
+				Thread thread = new Thread(){
+			    	@Override
+		            public void run() {
+		                 try {
+		                    Thread.sleep(2000); // same as Toast.LENGTH_SHORT
+		                    getActivity().finish();
+		                } catch (Exception e) {
+		                    Log.d("TranscribeFragment", "Error returning to activity.");
+		                }
+		             }  
+		           };
+				thread.start();
+			}		
+		});
+	}
+	
+	/*
+	 * Writes what is in the textbox into a file and saves it.
+	 */
+	private void writeToFile(){
+		try {
+			FileWriter writer = new FileWriter(output, false);
+			writer.write(transcribeField.getText().toString());
+			writer.close();
+		} catch (IOException e) {
+			Log.d("TranscribeFragment", "Error writing to file.");
+		}
 	}
 	
 	/*
@@ -81,64 +146,18 @@ public class TranscribeFragment extends Fragment{
 		savedInstanceState.putString(SAVED_TEXT, transcribeField.getText().toString());
 	}
 	
+	/*
+	 * On pause, saves text to SharedPreferences.
+	 * @see android.support.v4.app.Fragment#onPause()
+	 */
 	public void onPause() {
 		super.onPause();
 		String savedText = transcribeField.getText().toString();
-		SharedPreferences mem = this.getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
 		SharedPreferences.Editor editor = mem.edit();
 		editor.putString(SAVED_TEXT, savedText);
 		editor.commit();
 		if (!done)
 			writeToFile();
-	}
-
-	public void addText(String str){
-		transcribeField.append(str);
-	}
-	
-	private void setUpButtons(){
-		((Button) transcribeLayout.findViewById(R.id.done_text_button)).setOnClickListener(new OnClickListener(){
-			@Override
-			public void onClick(View v) {
-				writeToFile();
-				File dir = new File(TabConstants.PREFIX + "transcriptions");
-				dir.mkdirs();
-				output.renameTo(new File(dir, output.getName()));
-				done = true;
-				
-				SharedPreferences mem = getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
-				SharedPreferences.Editor editor = mem.edit();
-				editor.remove(SAVED_TEXT);
-				editor.remove(PlaybackFragment.STATE_TIME);
-				editor.remove(PlaybackFragment.STATE_CHRONOMETER);
-				editor.commit();
-				
-				String toastText = "Saved transcription as " + output.getName();
-				Toast.makeText(getActivity().getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
-			    Thread thread = new Thread(){
-			    	@Override
-		            public void run() {
-		                 try {
-		                    Thread.sleep(2000);
-		                    getActivity().finish();
-		                } catch (Exception e) {
-		                    Log.d("TranscribeFragment", "error returning to activity");
-		                }
-		             }  
-		           };
-				thread.start();
-			}		
-		});
-	}
-	
-	private void writeToFile(){
-		try {
-			FileWriter writer = new FileWriter(output, false);
-			writer.write(transcribeField.getText().toString());
-			writer.close();
-		} catch (IOException e) {
-			Log.d("TranscribeFragment", "Error writing to file.");
-		}
 	}
 
 }
