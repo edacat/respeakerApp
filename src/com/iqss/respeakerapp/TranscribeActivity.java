@@ -99,8 +99,9 @@ public class  TranscribeActivity extends FragmentActivity implements OnTouchList
 			onTextFocus();
 		
 	}
-
-	// appends timestamp to textbox when recording (re)started
+	
+	// implemented for ExtraOnClickListener (used in PlaybackFragment)
+	// appends timestamp to textbox when playback (re)started
 	@Override
 	public void onClicked(String timestamp) {
 		 transcribeFragment.addText("\n(" + timestamp + ") ");

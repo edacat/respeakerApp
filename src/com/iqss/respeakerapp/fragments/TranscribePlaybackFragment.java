@@ -36,7 +36,7 @@ public class TranscribePlaybackFragment extends PlaybackFragment {
 		// initializes media player
 		player.setDataSource(parentActivity.getApplicationContext(), uri);
 		player.prepare();
-//		Log.d("TranscribePlaybackFragment", "Audio length: " + Integer.toString((int) Math.ceil(player.getDuration() / 1000.)));
+		// Log.d("TranscribePlaybackFragment", "Audio length: " + Integer.toString((int) Math.ceil(player.getDuration() / 1000.)));
 		player.setOnCompletionListener(new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
@@ -84,6 +84,7 @@ public class TranscribePlaybackFragment extends PlaybackFragment {
 	 */
 	protected void stopButtonAction(){
 		pauseLogic();
+		playbackLoc = 0;
 	}
 	
 	/*

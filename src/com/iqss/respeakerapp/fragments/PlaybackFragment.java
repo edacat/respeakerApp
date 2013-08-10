@@ -35,9 +35,8 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 
 	static final String STATE_FILENAME = "outputFile";
 	static final String STATE_PLAYING = "wasPlaying";
-	static final String STATE_TIME = "playerTime";
+	static final String STATE_LOC = "playbackLoc";
 	static final String STATE_CHRONOMETER = "chronometerTime";
-//	static final String STATE_BYTES = "playerBytes";
 
 	protected RelativeLayout playbackLayout = null;
 	protected Chronometer mChronometer = null;
@@ -45,7 +44,11 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 	private ExtraOnClickListener onStartPlaybackListener = null;
 	private SharedPreferences mem = null;
 
-	protected int playbackLoc = 0; // for keeping track of listening location
+	// For keeping track of listening location.
+	// in RespeakPlaybackFragment, playbackLoc is in bytes
+	// in TranscribePlaybackFragement, it's in milliseconds (~timeWhenStopped)
+	protected int playbackLoc = 0; 
+	
 	protected long timeWhenStopped = 0; // might be a duplicate, not sure
 	protected boolean isPlaying = false;
 	protected boolean continued = false; // to avoid a glitch where when playback starts, seekbar goes ahead too much 
@@ -68,13 +71,6 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		playbackLayout = (RelativeLayout) playbackView;
 		return playbackView;
 	}
-
-	/*
-	 * returns whether playback is occuring or not
-	 */
-	public boolean getStatus(){
-		return isPlaying;
-	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -84,8 +80,8 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		if (savedInstanceState != null) {
 			filename = savedInstanceState.getString(STATE_FILENAME);
 			isPlaying = savedInstanceState.getBoolean(STATE_PLAYING);
-//			playbackLoc = savedInstanceState.getInt(STATE_BYTES);
-			timeWhenStopped = savedInstanceState.getLong(STATE_TIME);
+			playbackLoc = savedInstanceState.getInt(STATE_LOC);
+			timeWhenStopped = savedInstanceState.getLong(STATE_CHRONOMETER);
 			Log.d("PlaybackFragment", "state recreated");
 		}
 		
@@ -95,9 +91,10 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 			onStartPlaybackListener = (ExtraOnClickListener) this.getActivity();
 			multiplier = 1.0;
 		}
-			
+		
+		// pull data from SharedPreferences	
 		mem = this.getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
-		playbackLoc = mem.getInt(STATE_TIME, playbackLoc);
+		playbackLoc = mem.getInt(STATE_LOC, playbackLoc);
 		timeWhenStopped = mem.getLong(STATE_CHRONOMETER, timeWhenStopped);
 
 		// set up Chronometer
@@ -133,7 +130,7 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		
 		// save data in SharedPreferences
 		SharedPreferences.Editor editor = mem.edit();
-		editor.putInt(STATE_TIME, playbackLoc);
+		editor.putInt(STATE_LOC, playbackLoc);
 		editor.putLong(STATE_CHRONOMETER, timeWhenStopped);
 		editor.commit();
 	}
@@ -143,12 +140,10 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 	 */
 	private void setUpButtons() {
 		// setting up functionality for the record button
-		final ImageButton playback_button = (ImageButton) playbackLayout
-				.findViewById(R.id.play_button);
+		final ImageButton playback_button = (ImageButton) playbackLayout.findViewById(R.id.play_button);
 
 		// setting up functionality for the stop button
-		final ImageButton stop_button = (ImageButton) playbackLayout
-				.findViewById(R.id.stop_button);
+		final ImageButton stop_button = (ImageButton) playbackLayout.findViewById(R.id.stop_button);
 		
 		// anonymous function call (should start/pause recording)
 		playback_button.setOnClickListener(new View.OnClickListener() {
@@ -158,7 +153,6 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 				// pauses playback
 				if (!isPlaying) {
 					timeWhenStopped = mChronometer.getBase() - SystemClock.elapsedRealtime();
-					Log.d("fragment paused", (String) mChronometer.getText());
 					mChronometer.stop();				
 					
 					pauseButtonAction();
@@ -171,6 +165,8 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 					mChronometer.setBase(SystemClock.elapsedRealtime() + timeWhenStopped);
 					mChronometer.start();
 					
+					// appends timestamp to textbox when recording (re)started
+					// (TranscribeActivity only, otherwise listener is null)
 					if (onStartPlaybackListener != null)
 						onStartPlaybackListener.onClicked((String) mChronometer.getText());
 					
@@ -188,20 +184,27 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 				mChronometer.stop();
 				mChronometer.setBase(SystemClock.elapsedRealtime());
 				timeWhenStopped = 0;
-				playbackLoc = 0;
+				mSeekBar.setProgress(0);
 				
 				stopButtonAction();
 				playback_button.setImageResource(R.drawable.play);
-				mSeekBar.setProgress(0);
-				Log.d("Stop Button", "playing stopped");
 				isPlaying = false;
 				continued = false;
+				Log.d("Stop Button", "playing stopped");
 			}
 		});
 	}
 	
 	/*
-	 * Increments seekbar every time the chronometer ticks.
+	 * returns whether playback is occuring or not
+	 */
+	public boolean getStatus(){
+		return isPlaying;
+	}
+	
+	/*
+	 * Increments seekbar every time the chronometer ticks. Avoids issue of chronometer
+	 * skipping ahead by 2 when playback first started.
 	 * @see android.widget.Chronometer.OnChronometerTickListener#onChronometerTick(android.widget.Chronometer)
 	 */
 	@Override
@@ -251,8 +254,8 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		super.onSaveInstanceState(savedInstanceState);
 		savedInstanceState.putString(STATE_FILENAME, filename);
 		savedInstanceState.putBoolean(STATE_PLAYING, isPlaying);
-//		savedInstanceState.putInt(STATE_BYTES, playbackLoc);
-		savedInstanceState.putLong(STATE_TIME, playbackLoc);
+		savedInstanceState.putLong(STATE_CHRONOMETER, timeWhenStopped);
+		savedInstanceState.putLong(STATE_LOC, playbackLoc);
 	}
 
 	// -------------------------------------------------------------
