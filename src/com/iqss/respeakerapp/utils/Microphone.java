@@ -133,6 +133,10 @@ public class Microphone {
 		} catch (Exception e) {
 			Log.e("Microphone", "Error writing file size.");
 		}
+		// HACK: tags file with modification time 0, should differentiate a file in
+		// "recordings" that is in progress from one that is done but with the same 
+		// name
+		(new File(filePath)).setLastModified(0);
 	}
 	
 	/*

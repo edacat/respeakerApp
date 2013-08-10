@@ -28,6 +28,7 @@ import com.iqss.respeakerapp.fragments.PlaybackFragment;
 import com.iqss.respeakerapp.utils.Microphone;
 
 public class RespeakPlaybackFragment extends PlaybackFragment {
+	
 	private float speed = (float) 0.7;
 	private float pitch = (float) 1.0;
 	private float rate = (float) 1.0;

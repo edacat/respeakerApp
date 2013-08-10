@@ -40,18 +40,22 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 //	static final String STATE_BYTES = "playerBytes";
 
 	protected RelativeLayout playbackLayout = null;
-
-	protected int playbackLoc = 0; // for keeping track of listening location
-	protected boolean isPlaying = false;
-	protected String filename = null;
-	protected String subFolder = null;
 	protected Chronometer mChronometer = null;
 	protected SeekBar mSeekBar = null;
-	protected long timeWhenStopped = 0;
-	protected boolean continued = false;
-	
 	private ExtraOnClickListener onStartPlaybackListener = null;
+	private SharedPreferences mem = null;
+
+	protected int playbackLoc = 0; // for keeping track of listening location
+	protected long timeWhenStopped = 0; // might be a duplicate, not sure
+	protected boolean isPlaying = false;
+	protected boolean continued = false; // to avoid a glitch where when playback starts, seekbar goes ahead too much 
+	protected String filename = null;
+	protected String subFolder = null;
 	
+	/*
+	 * interface for listening to when start button clicked
+	 * (in which timestamp is automatically tacked onto the text box)
+	 */
 	public interface ExtraOnClickListener {
         public void onClicked(String timestamp);
     }
@@ -59,15 +63,15 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		View playbackView = inflater.inflate(R.layout.playback_view, container,
-				false);
-		Log.d("PlaybackFragment", "view inflated");
-		if (getArguments() != null)
-			Log.d("PlaybackArgs", getArguments().getString(TabConstants.FILENAME));
+		View playbackView = inflater.inflate(R.layout.playback_view, container, false);
+		Log.d("PlaybackFragment", "View inflated.");
 		playbackLayout = (RelativeLayout) playbackView;
 		return playbackView;
 	}
 
+	/*
+	 * returns whether playback is occuring or not
+	 */
 	public boolean getStatus(){
 		return isPlaying;
 	}
@@ -76,6 +80,7 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
+		// recreate fragment state
 		if (savedInstanceState != null) {
 			filename = savedInstanceState.getString(STATE_FILENAME);
 			isPlaying = savedInstanceState.getBoolean(STATE_PLAYING);
@@ -83,35 +88,41 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 			timeWhenStopped = savedInstanceState.getLong(STATE_TIME);
 			Log.d("PlaybackFragment", "state recreated");
 		}
-		double multiplier = 1.43;
+		
+		// calculated multiplier as inverse of respeaking playback rate (10/7)
+		double multiplier = 1.43; 
 		if (this.getActivity().getClass().getSimpleName().equals("TranscribeActivity")){
 			onStartPlaybackListener = (ExtraOnClickListener) this.getActivity();
 			multiplier = 1.0;
 		}
-		
-		
-		
-		SharedPreferences mem = this.getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
+			
+		mem = this.getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
 		playbackLoc = mem.getInt(STATE_TIME, playbackLoc);
 		timeWhenStopped = mem.getLong(STATE_CHRONOMETER, timeWhenStopped);
 
+		// set up Chronometer
 		mChronometer = (Chronometer) playbackLayout.findViewById(R.id.playback_chronometer);
 		mChronometer.setBase(SystemClock.elapsedRealtime() + timeWhenStopped);
 		mChronometer.setOnChronometerTickListener((OnChronometerTickListener) this);
 
+		// set up filename
 		subFolder = (this.getActivity().getClass().getSimpleName().equals("RespeakActivity")) ? "recordings" : "respeakings";
 		File dir = new File(TabConstants.PREFIX + subFolder, getArguments().getString(TabConstants.FILENAME) + ".wav");
 		filename = dir.toString();
 		
+		// set seekbar (max is the length of the audio in seconds, increments by one each second)
 		mSeekBar = (SeekBar) playbackLayout.findViewById(R.id.seekbar);
 		mSeekBar.setMax(getDuration(multiplier));
 		mSeekBar.setOnSeekBarChangeListener((OnSeekBarChangeListener) this);
 		mSeekBar.setProgress((int) Math.floor(timeWhenStopped * -1 / 1000.));
-		Log.d("progress", Integer.toString(mSeekBar.getProgress()));
 		
 		setUpButtons();
 	}
 
+	/*
+	 * When fragment is put on pause (no longer visible in background or foreground)
+	 * @see android.support.v4.app.Fragment#onPause()
+	 */
 	public void onPause() {
 		super.onPause();
 		if (isPlaying)
@@ -120,22 +131,11 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		isPlaying = false;
 		pauseLogic();
 		
-		SharedPreferences mem = this.getActivity().getSharedPreferences(getArguments().getString(TabConstants.FILENAME), 0);
+		// save data in SharedPreferences
 		SharedPreferences.Editor editor = mem.edit();
 		editor.putInt(STATE_TIME, playbackLoc);
 		editor.putLong(STATE_CHRONOMETER, timeWhenStopped);
 		editor.commit();
-	}
-
-	/*
-	 * Saves fragment state when activity is left.
-	 */
-	public void onSaveInstanceState(Bundle savedInstanceState) {
-		super.onSaveInstanceState(savedInstanceState);
-		savedInstanceState.putString(STATE_FILENAME, filename);
-		savedInstanceState.putBoolean(STATE_PLAYING, isPlaying);
-//		savedInstanceState.putInt(STATE_BYTES, playbackLoc);
-		savedInstanceState.putLong(STATE_TIME, playbackLoc);
 	}
 
 	/*
@@ -171,7 +171,6 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 					mChronometer.setBase(SystemClock.elapsedRealtime() + timeWhenStopped);
 					mChronometer.start();
 					
-					Log.d("truth", Boolean.toString(onStartPlaybackListener == null));
 					if (onStartPlaybackListener != null)
 						onStartPlaybackListener.onClicked((String) mChronometer.getText());
 					
@@ -201,6 +200,10 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		});
 	}
 	
+	/*
+	 * Increments seekbar every time the chronometer ticks.
+	 * @see android.widget.Chronometer.OnChronometerTickListener#onChronometerTick(android.widget.Chronometer)
+	 */
 	@Override
 	public void onChronometerTick(Chronometer chronometer) {
 		if (continued)
@@ -208,21 +211,57 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		continued = true;
 	}
 	
+	/*
+	 * Listener that implements seeking (rewinding/fastforwarding) functionality
+	 * @see android.widget.SeekBar.OnSeekBarChangeListener#onProgressChanged(android.widget.SeekBar, int, boolean)
+	 */
 	@Override
 	public void onProgressChanged(SeekBar seekBar, int currentProgress, boolean fromUser) {
+		// only reacts if seekbar changes because of user input
 		if (fromUser){
-			Log.d("new loc", Integer.toString(currentProgress));
 			seekAction(currentProgress);
-			timeWhenStopped = -1000 * currentProgress;
+			timeWhenStopped = -1000 * currentProgress; // timeWhenStopped is negative, in ms
 			mChronometer.setBase(SystemClock.elapsedRealtime() + timeWhenStopped);
+		}	
+	}
+	
+	/*
+	 * Get the length of the audio (slowed down or regular, depending on multiplier)
+	 */
+	private int getDuration(double multiplier){
+		int duration = 30;
+		MediaPlayer player = new MediaPlayer();
+		player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+		// need to instantiate MediaPlayer to get the duration
+		try {
+			player.setDataSource(getActivity().getApplicationContext(), Uri.parse(filename));
+			player.prepare();
+			duration = (int) Math.ceil(player.getDuration() * multiplier / 1000.);
+			player.release();
+		} catch (Exception e) {
+			Log.e("PlaybackFragment", "Error getting duration of audio.");
 		}
-		
+		return duration;		
+	}
+	
+	/*
+	 * Saves fragment state when activity is left.
+	 */
+	public void onSaveInstanceState(Bundle savedInstanceState) {
+		super.onSaveInstanceState(savedInstanceState);
+		savedInstanceState.putString(STATE_FILENAME, filename);
+		savedInstanceState.putBoolean(STATE_PLAYING, isPlaying);
+//		savedInstanceState.putInt(STATE_BYTES, playbackLoc);
+		savedInstanceState.putLong(STATE_TIME, playbackLoc);
 	}
 
+	// -------------------------------------------------------------
+	// **********MANDATORY INTERFACE FUNCTIONS (unused)*************
+	// -------------------------------------------------------------
+	
 	@Override
 	public void onStartTrackingTouch(SeekBar seekBar) {
 		Log.d("Seekbar", "start tracking touch");
-		
 	}
 
 	@Override
@@ -231,21 +270,9 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		
 	}
 	
-	private int getDuration(double multiplier){
-		int duration = 30;
-		MediaPlayer player = new MediaPlayer();
-		player.setAudioStreamType(AudioManager.STREAM_MUSIC);	
-		try {
-			player.setDataSource(getActivity().getApplicationContext(), Uri.parse(filename));
-			player.prepare();
-			Log.d("Duration", Integer.toString(player.getDuration()));
-			duration = (int) Math.ceil(player.getDuration() * multiplier / 1000.);
-			player.release();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return duration;		
-	}
+	// -------------------------------------------------------------
+	// ********************ABSTRACT FUNCTIONS***********************
+	// -------------------------------------------------------------
 	
 	protected abstract void playButtonAction(ImageButton button, SeekBar mSeekBar);
 	
@@ -256,4 +283,5 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 	protected abstract void pauseLogic();
 	
 	protected abstract void seekAction(int newLoc);
+	
 }
