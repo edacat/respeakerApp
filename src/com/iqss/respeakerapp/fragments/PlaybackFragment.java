@@ -87,9 +87,12 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		
 		// calculated multiplier as inverse of respeaking playback rate (10/7)
 		double multiplier = 1.43; 
+		// so for ReviewActivity and TranscribeActivity
+		if (!this.getActivity().getClass().getSimpleName().equals("RespeakActivity")){			
+			multiplier = 1.0;
+		}
 		if (this.getActivity().getClass().getSimpleName().equals("TranscribeActivity")){
 			onStartPlaybackListener = (ExtraOnClickListener) this.getActivity();
-			multiplier = 1.0;
 		}
 		
 		// pull data from SharedPreferences	
@@ -110,6 +113,7 @@ public abstract class PlaybackFragment extends Fragment implements OnChronometer
 		// set seekbar (max is the length of the audio in seconds, increments by one each second)
 		mSeekBar = (SeekBar) playbackLayout.findViewById(R.id.seekbar);
 		mSeekBar.setMax(getDuration(multiplier));
+		Log.d("seekbar", Integer.toString(mSeekBar.getMax()));
 		mSeekBar.setOnSeekBarChangeListener((OnSeekBarChangeListener) this);
 		mSeekBar.setProgress((int) Math.floor(timeWhenStopped * -1 / 1000.));
 		

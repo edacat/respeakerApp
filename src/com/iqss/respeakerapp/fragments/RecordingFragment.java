@@ -275,7 +275,7 @@ public class RecordingFragment extends Fragment implements SaveDialogListener {
 			SharedPreferences.Editor editor = mem.edit();
 			editor.remove(STATE_FILENAME);
 			editor.remove(STATE_TIME);
-			editor.remove(PlaybackFragment.STATE_TIME);
+			editor.remove(PlaybackFragment.STATE_LOC);
 			editor.remove(PlaybackFragment.STATE_CHRONOMETER);
 			editor.commit();
 		}
