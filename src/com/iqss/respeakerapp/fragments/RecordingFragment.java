@@ -253,6 +253,11 @@ public class RecordingFragment extends Fragment implements SaveDialogListener {
 				dialog.show(fm, "naming dialog");
 			// otherwise if respeaking, display toast
 			} else {
+				// move file from inProgress folder to respeakings folder
+				File originalLoc = new File(TabConstants.PREFIX + "inProgress", filename);
+				File newLoc = new File(TabConstants.PREFIX + "respeakings", filename);
+				originalLoc.renameTo(newLoc);
+				
 				String toastText = "Saved respeaking as " + filename;
 				Toast.makeText(getActivity().getApplicationContext(), toastText, Toast.LENGTH_SHORT).show();
 				// waiting for toast to disappear before force directing to main page
@@ -294,7 +299,9 @@ public class RecordingFragment extends Fragment implements SaveDialogListener {
 			newName = newName + ".wav";
 		File newFile = new File(original.getParentFile().getAbsolutePath(), newName);
 		
-		// keeps appending _copy tags until no more name conflicts
+		// keeps appending _copy tags until no more name conflicts 
+		// *** Use lastModified to recognize whether filename belongs to same file (saved from previous
+		//     pause) or an actual duplicate (ONLY FOR RECORDING, NOT RESPEAKING)
 		while (newFile.exists() && newFile.lastModified() != 0) {
 			newName = newName.replace(".wav", "_copy.wav");
 			newFile = new File(original.getParentFile().getAbsolutePath(), newName);			

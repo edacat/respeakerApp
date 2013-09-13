@@ -136,7 +136,8 @@ public class Microphone {
 		// HACK: tags file with modification time 0, should differentiate a file in
 		// "recordings" that is in progress from one that is done but with the same 
 		// name
-		(new File(filePath)).setLastModified(0);
+		if (subFolder.equals("recordings"))
+			(new File(filePath)).setLastModified(0);
 	}
 	
 	/*

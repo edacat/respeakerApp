@@ -8,8 +8,6 @@
 
 package com.iqss.respeakerapp.fragments;
 
-import java.io.File;
-
 import com.iqss.respeakerapp.R;
 import com.iqss.respeakerapp.utils.TabConstants;
 
@@ -41,9 +39,7 @@ public class NameDialog extends DialogFragment{
 		
 		// get original file path (used to rename)
 		String filename = getArguments().getString(TabConstants.FILENAME);
-		File dir = new File(TabConstants.PREFIX + "recordings");
-		dir.mkdirs();
-		final String absPath = new File(dir.getAbsolutePath(), filename).getAbsolutePath();
+		final String absPath = TabConstants.PREFIX + "recordings/" + filename;
 
         // Use the Builder class for convenient dialog construction
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());

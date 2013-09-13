@@ -5,26 +5,29 @@
     android:paddingRight="16dp"
     android:orientation="vertical" >
     
-    <Button
+    <ImageButton
     android:id="@+id/record_button"
     android:layout_width="fill_parent"
     android:layout_height="0dp"
     android:layout_weight="1"
-    android:text="@string/record_button"
+    android:src="@drawable/menu_record"
+    android:contentDescription="@string/menu_record"
     android:onClick="startRecordActivity" />
     
-    <Button
+    <ImageButton
     android:id="@+id/respeak_button"
     android:layout_width="fill_parent"
     android:layout_height="0dp"
     android:layout_weight="1"
-    android:text="@string/respeak_button" />
+    android:src="@drawable/menu_respeak"
+    android:contentDescription="@string/menu_respeak" />
         
-    <Button
+    <ImageButton
     android:id="@+id/transcribe_button"
     android:layout_width="fill_parent"
     android:layout_height="0dp"
     android:layout_weight="1"
-    android:text="@string/transcribe_button" />
+    android:src="@drawable/menu_transcribe"
+    android:contentDescription="@string/menu_transcribe" />
 
 </LinearLayout>

@@ -18,7 +18,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.Menu;
 import android.view.View;
-import android.widget.Button;
+import android.widget.ImageButton;
 
 public class MenuActivity extends Activity {
 	private Context context = this;
@@ -29,6 +29,7 @@ public class MenuActivity extends Activity {
 			super.onCreate(savedInstanceState);
 			setContentView(R.layout.activity_menu);
 		}
+		
 		setUpExplorerButtons();
 	}
 	
@@ -46,7 +47,7 @@ public class MenuActivity extends Activity {
 	 */
 	private void setUpExplorerButtons(){
 		
-		final Button respeakButton = (Button) findViewById(R.id.respeak_button);
+		final ImageButton respeakButton = (ImageButton) findViewById(R.id.respeak_button);
 		respeakButton.setOnClickListener(new View.OnClickListener() {		
 			@Override
 			public void onClick(View v) {
@@ -57,7 +58,7 @@ public class MenuActivity extends Activity {
 			}
 		});
 		
-		final Button transcribeButton = (Button) findViewById(R.id.transcribe_button);
+		final ImageButton transcribeButton = (ImageButton) findViewById(R.id.transcribe_button);
 		transcribeButton.setOnClickListener(new View.OnClickListener() {			
 			@Override
 			public void onClick(View v) {

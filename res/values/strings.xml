@@ -19,5 +19,8 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="save_query">Save recording as:</string>
+    <string name="menu_record">Click to start recording</string>
+    <string name="menu_respeak">Click to start respeaking</string>
+    <string name="menu_transcribe">Click to start transcribing</string>
 
 </resources>

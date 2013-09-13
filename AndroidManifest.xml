@@ -59,6 +59,7 @@
         <activity
             android:name="com.iqss.respeakerapp.FileExplorerActivity"
             android:label="@string/title_activity_file_explorer"
+            android:screenOrientation="portrait"
             android:parentActivityName="com.iqss.respeakerapp.MenuActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -67,6 +68,7 @@
         <activity
             android:name="com.iqss.respeakerapp.ReviewActivity"
             android:label="@string/title_activity_review"
+            android:screenOrientation="portrait"
             android:parentActivityName="com.iqss.respeakerapp.FileExplorerActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

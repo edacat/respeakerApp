@@ -54,7 +54,6 @@ public class TranscribeFragment extends Fragment{
 		// set up arguments to get output filepath
 		if (getArguments() != null && output == null){
 			File dir = new File(TabConstants.PREFIX + "inProgress");
-			dir.mkdirs();
 			output = new File(dir, getArguments().getString(TabConstants.FILENAME) + ".txt");
 		}
 		
@@ -92,7 +91,6 @@ public class TranscribeFragment extends Fragment{
 				
 				// move file to "completed" folder
 				File dir = new File(TabConstants.PREFIX + "transcriptions");
-				dir.mkdirs();
 				output.renameTo(new File(dir, output.getName()));
 				done = true;
 				

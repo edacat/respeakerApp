@@ -17,10 +17,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TabWidget;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTabHost;
 import android.support.v4.app.NavUtils;
 import android.annotation.TargetApi;
+import android.graphics.Color;
 import android.os.Build;
 
 public class FileExplorerActivity extends FragmentActivity{
@@ -58,7 +60,7 @@ public class FileExplorerActivity extends FragmentActivity{
 		mTabHost = (FragmentTabHost) findViewById(android.R.id.tabhost);
 		mTabHost.setup(this, getSupportFragmentManager(), R.id.realtabcontent);
 		Log.d("FileExplorerActivity", "Tab host set up.");
-		
+
 		// pass bundles of arguments to each new tab
 		Bundle[] bundles = new Bundle[TabConstants.TAB_CATEGORIES.length];
 		
@@ -69,6 +71,18 @@ public class FileExplorerActivity extends FragmentActivity{
 			bundles[i].putInt(TabConstants.INPUT_ACTIVITY, inputActivity);
 			mTabHost.addTab(mTabHost.newTabSpec(tabCategoryName).setIndicator(tabCategoryName), FileExplorerFragment.class, bundles[i]);
 			Log.d("FileExplorerActivity", "Tab from bundle array added.");
+		}
+		setTabColor();
+	}
+	
+	/*
+	 * Sets tab colors
+	 */
+	private void setTabColor(){
+		TabWidget widget = mTabHost.getTabWidget();
+		String[] colors = {"#8cf37c", "#f9f47b", "#f57a7a"};
+		for (int i = 0; i < 3; i++){
+			widget.getChildAt(i).setBackgroundColor(Color.parseColor(colors[i]));
 		}
 	}
 	

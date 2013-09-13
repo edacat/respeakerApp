@@ -99,15 +99,14 @@ public class FileExplorerFragment extends ListFragment{
     	// different filters depending on if files are inProgress (no filter needed) or other (filter needed)
     	File[] fileList = (tabCategory == 2) ? DIRECTORIES[inputActivity].listFiles() : DIRECTORIES[inputActivity - 1].listFiles(filter);
     	
-    	// sorting files by last modified date (oldest on top)
+    	// sorting files by last modified date (changed to newest on top)
     	Arrays.sort(fileList, new Comparator<File>(){
-    	    public int compare(File f1, File f2)
-    	    {
-    	        return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+    	    public int compare(File f1, File f2) {
+    	        return -1 * Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
     	    } 
     	 });
     	
-    	// gets name (without extension) of all filtes that passed that filter
+    	// gets name (without extension) of all files that passed that filter
     	for (File f : fileList)
     		filenameArrayList.add(f.getName().split("\\.")[0]);
     	
