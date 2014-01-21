@@ -10,6 +10,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="record_button_description">Press to record</string>
     <string name="stop_button_description">Press to stop</string>
+    <string name="save_button_description">Press to save</string>
+    <string name="trash_button_description">Press to delete</string>
     <string name="title_activity_respeak">Respeak</string>
     <string name="title_activity_transcribe">Transcribe</string>
     <string name="no_data">No Data</string>

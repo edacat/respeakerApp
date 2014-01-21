@@ -5,35 +5,51 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
     
-    <LinearLayout
+   <LinearLayout
     android:id="@+id/button_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_alignParentTop="true"
     android:gravity="center"
-    android:orientation="horizontal" >
+    android:orientation="vertical" >
+    
 	   	<ImageButton
     	android:id="@+id/record_icon"
     	android:layout_width="wrap_content"
-    	android:layout_height="wrap_content"
-    	android:layout_marginRight="20dp"
+    	android:layout_height="wrap_content"	
     	android:src="@drawable/record_logo"
     	android:contentDescription="@string/record_button_description" />
-    
-    	<ImageButton
-    	android:id="@+id/stop_icon"
+	   	<!-- android:layout_marginRight="20dp" -->
+	   	
+	   	<Chronometer 
+    	android:id="@+id/chronometer" 
+    	android:layout_width="wrap_content" 
+    	android:layout_height="wrap_content" 
+    	android:textSize="30sp"
+    	/> 
+	</LinearLayout>  	
+	<LinearLayout
+    android:id="@+id/other_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:layout_alignParentBottom="true"
+    android:orientation="horizontal" >
+	   	
+	   	<ImageButton
+    	android:id="@+id/save_icon"
     	android:layout_width="wrap_content"
     	android:layout_height="wrap_content"
     	android:src="@drawable/stop"
-    	android:contentDescription="@string/stop_button_description" />
+    	android:contentDescription="@string/save_button_description" />
+	   	
+	   	<ImageButton
+    	android:id="@+id/trash_icon"
+    	android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:src="@drawable/stop"
+    	android:contentDescription="@string/trash_button_description" />
+    
 	</LinearLayout>
-   
-	<Chronometer 
-    android:id="@+id/chronometer" 
-    android:layout_width="wrap_content" 
-    android:layout_height="wrap_content" 
-    android:layout_centerHorizontal="true"
-    android:textSize="30sp"
-    android:layout_below="@+id/button_layout"/> 
         
 </RelativeLayout>
